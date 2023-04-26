@@ -19,3 +19,7 @@ i. If the {id} is not found, an error message is returned as well as HTTP-status
 
 From the browser using localhost:3000 the index.html file is served from there you can add albums, update an album title or delete an album, the database collection is displayed on the page in the browser.
 After working for so long the tiredness prevented me from working any further for the sake of including field validation.
+
+There is a refresh button that will refresh the page after an action has been performed to show that the changes (deletion/update) are sent to the database. 
+
+When deleting the action produces an error dialogbox which suggests that the record is not deleted but when you click refresh the deletion is in fact confirmed. I did not have fix this as at the point of submission my energy for working on this lab was depleted
