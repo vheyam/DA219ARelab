@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Album Collection</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+  <div style="height: 400px; overflow: scroll;">
+    <h1>Album Collection Database</h1>
+    <table class ="table">
+      <thead>
+        <tr>
+
+          <th>ID&nbsp</th>
+          <th>Title&nbsp</th>
+          <th>Artist&nbsp</th>
+          <th>Year&nbsp</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="albumList">
+      </tbody>
+    </table><br>
+  </div>
+    <h2>Add Album</h2>
+    <form class="form-inline" id="addAlbumForm">
+      <div class="form-group">
+        <label>ID: <input type="text" class="form-control mx-sm-3" id="idInput"></label><br>
+      </div>
+      <div class="form-group"></div>
+        <label>Title: <input type="text" class="form-control mx-sm-3" id="titleInput"></label><br>
+      </div>
+      <div class="form-group">
+        <label>Artist: <input type="text" class="form-control mx-sm-3" id="artistInput"></label><br>
+      </div>
+      <div class="form-group">
+        <label>Year: <input type="number" class="form-control mx-sm-3" id="yearInput"></label><br>
+      </div>
+      <div class="container mt-5"></div>
+        <button type="submit" class="btn btn-primary mr-1">Add album</button>
+        <button type="button" class="btn btn-success mr-1" onclick="refreshAlbums()">Refresh database</button>
+    </div>
+    </form>
+  
+
+    <script>
+      function createAlbumRow(album) {
+        const row = document.createElement('tr');
+        
+
+        const idCell = document.createElement('td');
+        idCell.textContent = album.id;
+        row.appendChild(idCell);
+
+        const titleCell = document.createElement('td');
+        titleCell.textContent = album.title;
+        row.appendChild(titleCell);
+
+        const artistCell = document.createElement('td');
+        artistCell.textContent = album.artist;
+        row.appendChild(artistCell);
+
+        const yearCell = document.createElement('td');
+        yearCell.textContent = album.year;
+        row.appendChild(yearCell);
+
+        const actionsCell = document.createElement('td');
+
+        const updateButton = document.createElement('button');
+        updateButton.textContent = 'Update';
+        updateButton.classList.add('btn', 'btn-primary', 'mr-1');
+
+        updateButton.addEventListener('click', () => {
+          const newTitle = prompt('Enter the new title to update the album :', album.title);
+          if (newTitle) {
+            fetch(`/api/albums/${album.id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                title: newTitle,
+                artist: album.artist,
+                year: album.year,
+              }),
+            })
+              .then(response => response.json())
+              .then(updatedAlbum => {
+                album.title = updatedAlbum.title;
+                titleCell.textContent = updatedAlbum.title;
+              });
+          }
+        });
+        
+        /*
+        updateButton.addEventListener('click', () => {
+          const newTitle = prompt('Enter the new title to update the album :', album.title);
+          if (newTitle) {
+            album.title = newTitle;
+            titleCell.textContent = newTitle;
+            
+          }
+        });  */
+
+
+        actionsCell.appendChild(updateButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.classList.add('btn', 'btn-danger', 'mr-1');
+        deleteButton.addEventListener('click', () => {
+        const confirmDelete = confirm('Are you sure you want to delete this album?');
+        if (confirmDelete) {
+          if (album.id) {
+            console.log(album);
+
+            // send a DELETE request to delete album from database 
+            fetch(`/api/albums/${album.id}`, {
+              method: 'DELETE',
+            })
+              .then(response => response.json())
+              .then(deletedAlbum => {
+                row.remove();
+              })
+              .catch(error => {
+                console.error(error);
+                alert('Error deleting album');
+              });
+          } else {
+            alert('Album ID is undefined');
+          }
+        }
+      });
+        actionsCell.appendChild(deleteButton);
+
+        row.appendChild(actionsCell);
+
+        return row;
+      }
+
+      function addAlbumToTable(album) {
+        const row = createAlbumRow(album);
+        const albumList = document.getElementById('albumList');
+        albumList.appendChild(row);
+      }
+
+      
+      function addAlbumFormListener() {
+        const form = document.getElementById('addAlbumForm');
+        form.addEventListener('submit', (event) => {
+          event.preventDefault();
+          const idInput = document.getElementById('idInput');
+          const titleInput = document.getElementById('titleInput');
+          const artistInput = document.getElementById('artistInput');
+          const yearInput = document.getElementById('yearInput');
+          const album = {
+            id: idInput.value,
+            title: titleInput.value,
+            artist: artistInput.value,
+            year: yearInput.value
+          };
+        
+        // Send a POST request to add the album to the database
+        fetch('/api/albums', {
+          method: 'POST',
+          body: JSON.stringify(album),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(newAlbum => {
+          // Add the new album to the table on the page
+          addAlbumToTable(newAlbum);
+          form.reset();
+        })
+        .catch(error => {
+          console.error(error);
+          alert('Error adding album');
+        });
+      });
+    }
+
+      
+      function refreshAlbums() {
+        window.location.reload();
+      }
+
+      function retrieveAllAlbums() {
+        fetch('api/albums')
+          .then(response => response.json())
+          .then(albums => {
+            const albumList = document.getElementById('albumList');
+            albums.forEach(album => {
+              const row = createAlbumRow(album);
+              albumList.appendChild(row);
+            });
+          });
+      }
+
+      addAlbumFormListener();
+      retrieveAllAlbums();
+    </script>
+  </body>
+</html>
