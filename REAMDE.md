@@ -22,4 +22,4 @@ After working for so long the tiredness prevented me from working any further fo
 
 There is a refresh button that will refresh the page after an action has been performed to show that the changes (deletion/update) are sent to the database. 
 
-When deleting the action produces an error dialogbox which suggests that the record is not deleted but when you click refresh the deletion is in fact confirmed. I did not have fix this as at the point of submission my energy for working on this lab was depleted
+When deleting the action produces an error dialogbox which suggests that the record is not deleted but when you click refresh the deletion is in fact confirmed. I did not have the energy to fix this as at the point of submission my energy for working on this lab was depleted
