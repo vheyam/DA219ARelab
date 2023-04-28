@@ -1,12 +1,16 @@
+// import modules for the app, including Express for building the server 
+// Mongoose for interacting with the MongoDB database 
+// and the Album model from the ./model/album
 
-//const path = require('  path');
 const dotenv = require('dotenv');
 const express = require('express');
 const mongoose = require('mongoose');
 const Album = require("./model/album");
 const app = express();
 
-// load config
+// load config dotenv to load the environment variables from the .env file in the ./config directory
+// which contains sensitive information such as the MongoDB URI.
+
 dotenv.config({ path: './config/.env'})
 
 // connect to db
@@ -14,10 +18,14 @@ mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopol
   .then(() => console.log('Connected to MongoDB'))
   .catch(error => console.error(error));
 
+// add middleware functions parsing of incoming requests with JSON payloads, serving of static files from ./public not used
 app.use(express.json());
 app.use(express.static('public'));
 
 // get all albums
+// retrieves all albums from the database using the Album.find() method
+// and sends the response as a JSON object with the res.json() method. 
+// If there's an error, it sends an HTTP 500 error status code with an error message using res.status().send().
 app.get('/api/albums', function (req, res) {
   Album.find({})
     .then(albums => {
@@ -29,7 +37,14 @@ app.get('/api/albums', function (req, res) {
     });
 });
 
-// get album by title
+// get album by title requests to /api/albums/:title
+// retrieves an album from the database by the title field 
+// using the Album.findOne() method and sends the response as a JSON object 
+// if the album is found. If the album is not found, it sends an HTTP 404 error status code
+// with an error message. If there's a server error, 
+// send an HTTP 500 error status code with an error message.
+
+
 app.get('/api/albums/:title', function (req, res) {
   const title = req.params.title;
   Album.findOne({ title })
